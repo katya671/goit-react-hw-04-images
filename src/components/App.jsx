@@ -20,27 +20,26 @@ export const App = () => {
   const [totalHits, setTotalHits] = useState(0);
 
   useEffect(() => {
+    const apiImages = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getImages(searchQuery, page);
+        setImages(prevImages => [...prevImages, ...data.hits]);
+        setTotalHits(data.totalHits);
+        if (page === 1) {
+          toast.success(`We found ${data.totalHits} images`);
+        }
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (searchQuery.trim() !== '') {
       apiImages();
     }
-  }, [searchQuery]);
-
-  const apiImages = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getImages(searchQuery, page);
-      setImages(prevImages => [...prevImages, ...data.hits]);
-      setPage(prevPage => prevPage + 1);
-      setTotalHits(data.totalHits);
-      if (page === 1) {
-        toast.success(`We found ${data.totalHits} images`);
-      }
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [searchQuery, page]);
 
   const handleSearchSubmit = query => {
     setSearchQuery(query);
@@ -48,9 +47,7 @@ export const App = () => {
     setImages([]);
   };
 
-  const handleLoadMoreClick = () => {
-    apiImages();
-  };
+  const handleLoadMoreClick = () => setPage(prevPage => prevPage + 1);
 
   const handleImageClick = image => {
     setShowModal(true);
